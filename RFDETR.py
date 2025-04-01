@@ -17,7 +17,7 @@ start_time = time.time()
 # Object Detection Model 
 model = RFDETRBase()
 
-url = r"C:/Users/lmgre/Documents/SIU/Senior Design/Hugging_Face/.venv/Scripts/testing_transformers/object_id.jpg"
+url = r"C:/Users/lmgre/Documents/SIU/Senior Design/Hugging_Face/.venv/Scripts/testing_transformers/Inside.jpg"
 
 image = Image.open(url)
 detections = model.predict(image, threshold=0.5)
@@ -34,10 +34,10 @@ for class_id, confidence, (xmin, ymin, xmax, ymax) in zip(
     xcoord = (xmin + xmax) / 2
     ycoord = (ymin + ymax) / 2
 
-    segment = f"a {COCO_CLASSES[class_id]} at ({xcoord:.2f}, {ycoord:.2f})"
+    segment = f"a {COCO_CLASSES[class_id]} positioned at the coordinates ({xcoord:.2f}, {ycoord:.2f}) "
     prompt_parts.append(segment)
 
-prompt = f"\nIn the image, there is " + ", and ".join(prompt_parts) + "."
+prompt = f"In the image, there is " + ", and ".join(prompt_parts) + "."
 print(prompt)
 
 annotated_image = image.copy()
@@ -51,7 +51,7 @@ annotated_image.save("annotated_output.jpg")  # Change the filename as needed
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load images
-image = load_image("object_id.jpg")
+image = load_image("Inside.jpg")
 
 # Initialize processor and model
 processor = AutoProcessor.from_pretrained("HuggingFaceTB/SmolVLM-500M-Instruct")
@@ -66,7 +66,7 @@ messages = [
         "role": "user",
         "content": [
             {"type": "image"},
-            {"type": "text", "text": prompt + " Where are my scissors? What color are they?"}
+            {"type": "text", "text": prompt + "Describe the necessary actions a person should take to move through the doorway while avoiding any obstacles. Include potential movement strategies such as sidestepping, repositioning the obstacles, or navigating around the obstacles, depending on their placement relative to the doorway."}
         ]
     },
 ]
@@ -77,7 +77,7 @@ inputs = processor(text=prompt, images=[image], return_tensors="pt")
 inputs = inputs.to(DEVICE)
 
 # Generate outputs
-generated_ids = model.generate(**inputs, max_new_tokens=100)
+generated_ids = model.generate(**inputs, max_new_tokens=150)
 
 end_time = time.time()
 elapsed_time = end_time - start_time
